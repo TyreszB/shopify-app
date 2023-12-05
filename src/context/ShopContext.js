@@ -19,6 +19,7 @@ function ShopProvider({ children }) {
   const createCheckout = async () => {
     const newCheckout = await client.checkout.create();
     localStorage.setItem("checkout_id", newCheckout.id);
+    console.log(newCheckout);
     setCheckout(newCheckout);
   };
 
@@ -27,7 +28,24 @@ function ShopProvider({ children }) {
     setCheckout(fetchedCheckout);
   };
 
-  const addItemToCheckout = async () => {};
+  const addItemToCheckout = async (variantId, quantity) => {
+    if (checkout === null) {
+      const newCheckoutCart = createCheckout();
+    }
+    const lineItemsToAdd = [
+      {
+        variantId,
+        quantity: parseInt(quantity, 10),
+      },
+    ];
+
+    const newCheckout = await client.checkout.addLineItems(
+      checkout.id,
+      lineItemsToAdd
+    );
+    setCheckout(newCheckout);
+    setIsCartOpen(true);
+  };
   const removeLineItem = async (ItemId) => {};
   const fetchAllProducts = async () => {
     const products = await client.product.fetchAll();
@@ -38,16 +56,18 @@ function ShopProvider({ children }) {
     const product = await client.product.fetchByHandle(handle);
     setProduct(product);
   };
-  const closeCart = async () => {};
-  const openCart = async () => {};
-  const closeMenu = async () => {};
-  const openMenu = async () => {};
-
-  // if (localStorage.checkout_id) {
-  //   fetchCheckout(localStorage.checkout_id);
-  // } else {
-  //   createCheckout();
-  // }
+  const closeCart = async () => {
+    setIsCartOpen(false);
+  };
+  const openCart = async () => {
+    setIsCartOpen(true);
+  };
+  const closeMenu = async () => {
+    setIsMenuOpen(false);
+  };
+  const openMenu = async () => {
+    setIsMenuOpen(true);
+  };
 
   const value = {
     product,
