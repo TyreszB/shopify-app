@@ -12,26 +12,33 @@ const client = Client.buildClient({
 function ShopProvider({ children }) {
   const [product, setProduct] = useState({});
   const [products, setProducts] = useState([]);
-  const [checkout, setCheckout] = useState({});
+  const [checkout, setCheckout] = useState();
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const createCheckout = async () => {
     const newCheckout = await client.checkout.create();
-    localStorage.setItem("checkout_id", newCheckout.id);
-    console.log(newCheckout);
     setCheckout(newCheckout);
+    localStorage.setItem("checkout_id", newCheckout.id);
+    return newCheckout;
   };
 
   const fetchCheckout = async (checkoutId) => {
     const fetchedCheckout = await client.checkout.fetch(checkoutId);
     setCheckout(fetchedCheckout);
+    return fetchedCheckout;
   };
 
   const addItemToCheckout = async (variantId, quantity) => {
-    if (checkout === null) {
-      const newCheckoutCart = createCheckout();
+    let updatedCheckout = checkout;
+
+    if (!updatedCheckout) {
+      const newCheckout = await createCheckout();
+      setCheckout(newCheckout);
+      updatedCheckout = newCheckout;
     }
+    const checkoutId = updatedCheckout.id;
+
     const lineItemsToAdd = [
       {
         variantId,
@@ -39,17 +46,28 @@ function ShopProvider({ children }) {
       },
     ];
 
-    const newCheckout = await client.checkout.addLineItems(
-      checkout.id,
+    updatedCheckout = await client.checkout.addLineItems(
+      checkoutId,
       lineItemsToAdd
     );
-    setCheckout(newCheckout);
+
+    setCheckout(updatedCheckout);
     setIsCartOpen(true);
+    return updatedCheckout;
   };
-  const removeLineItem = async (ItemId) => {};
+
+  const removeLineItem = async (lineItemIdsToRemove) => {
+    const updatedCheckout = await client.checkout.removeLineItems(
+      checkout.id,
+      lineItemIdsToRemove
+    );
+
+    setCheckout(updatedCheckout);
+  };
   const fetchAllProducts = async () => {
     const products = await client.product.fetchAll();
     setProducts(products);
+    return products;
   };
 
   const fetchProductWithHandle = async (handle) => {
