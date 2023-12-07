@@ -51,7 +51,7 @@ export default function Cart() {
                     <Text>{item.title}</Text>
                   </Flex>
                   <Flex alignItems={"center"} justifyContent={"center"}>
-                    <Text>{item.variant.price.amount}</Text>
+                    <Text>{`$${item.variant.price.amount}0`}</Text>
                   </Flex>
                 </Grid>
               ))
